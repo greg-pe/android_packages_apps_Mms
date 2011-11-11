@@ -44,6 +44,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.media.AudioManager;
@@ -598,7 +599,20 @@ public class MessagingNotification {
         }
 
         notification.flags |= Notification.FLAG_SHOW_LIGHTS;
-        notification.defaults |= Notification.DEFAULT_LIGHTS;
+        /*
+        ** Faruq: Cyanogen poison
+        */
+        /* WAS: notification.defaults |= Notification.DEFAULT_LIGHTS;*/
+        // Patch for changing LED notification settings
+        boolean mBlinkLed = sp.getBoolean(MessagingPreferenceActivity.NOTIFICATION_LED, true);
+        if(mBlinkLed) {
+            // default color is green: 0xff00ff00
+            int mLedColor = Color.parseColor(sp.getString(MessagingPreferenceActivity.NOTIFICATION_LED_COLOR, "green"));
+            notification.ledARGB = mLedColor;
+            int mLedBlinkRate = Integer.parseInt(sp.getString(MessagingPreferenceActivity.NOTIFICATION_LED_BLINK_RATE, "2"));
+            notification.ledOnMS = 500;
+            notification.ledOffMS = mLedBlinkRate * 1000;
+        }
 
         // set up delete intent
         notification.deleteIntent = PendingIntent.getBroadcast(context, 0,
